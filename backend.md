@@ -7,7 +7,7 @@
 - **Java 17**: Provides modern features like records and sealed classes to ensure a clean and performant codebase.
 
 ### Messaging & Event-Driven Architecture
-- **Confluent Cloud (Kafka)**: Decouples gamification logic from core quiz generation via asynchronous event publishing.
+- **StreamBase Kafka**: Decouples gamification logic from core quiz generation via asynchronous event publishing using SASL_SSL and SCRAM-SHA-512 authentication.
 
 ### Security & Authentication
 - **Spring Security**: Configures the security filter chain, path authorizations, and CORS policies.

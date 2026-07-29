@@ -8,10 +8,10 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
-    // Dynamically set replicas: 3 for Confluent Cloud (HA), 1 for local/other brokers
-    private static final short REPLICAS = System.getenv("SPRING_KAFKA_BOOTSTRAP_SERVERS") != null
-            && System.getenv("SPRING_KAFKA_BOOTSTRAP_SERVERS").contains("confluent")
-            ? (short) 3 : (short) 1;
+    // Set replicas: 1 for StreamBase / single-broker environments, 3 if using multi-broker HA
+    private static final short REPLICAS = System.getenv("SPRING_KAFKA_REPLICAS") != null
+            ? Short.parseShort(System.getenv("SPRING_KAFKA_REPLICAS"))
+            : (short) 1;
 
     @Bean
     public NewTopic gamificationTopic() {
