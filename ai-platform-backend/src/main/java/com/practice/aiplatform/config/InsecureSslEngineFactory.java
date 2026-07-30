@@ -32,6 +32,9 @@ public class InsecureSslEngineFactory implements SslEngineFactory {
     public SSLEngine createClientSslEngine(String peerHost, int peerPort, String endpointIdentificationAlgorithm) {
         SSLEngine engine = sslContext.createSSLEngine(peerHost, peerPort);
         engine.setUseClientMode(true);
+        SSLParameters params = engine.getSSLParameters();
+        params.setEndpointIdentificationAlgorithm(null);
+        engine.setSSLParameters(params);
         return engine;
     }
 
