@@ -22,6 +22,11 @@ public class PromptModerationService {
             return false;
         }
 
+        // Fast-path: Standard benign topic/subject inputs under 100 characters without profanity/suspicious patterns
+        if (text.length() < 100 && !isSuspicious(text)) {
+            return false;
+        }
+
         String moderationPrompt = """
                 You are a strict content safety checker.
                 Check whether this user input contains vulgar, abusive, hateful, sexual, self-harm, or violent harassment language.
@@ -38,6 +43,14 @@ public class PromptModerationService {
             // Fail-open to avoid blocking valid users on moderation service outages.
             return false;
         }
+    }
+
+    private boolean isSuspicious(String text) {
+        String lower = text.toLowerCase();
+        return lower.contains("vulgar") || lower.contains("abuse") || lower.contains("fuck")
+                || lower.contains("shit") || lower.contains("kill") || lower.contains("sex")
+                || lower.contains("nude") || lower.contains("porn") || lower.contains("hack")
+                || lower.contains("exploit") || lower.contains("malware");
     }
 
     public String warningMessage() {

@@ -31,11 +31,11 @@ public class UsageService {
         Student student = studentRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Student not found with email: " + userEmail));
 
-        // 1. Check if user is a paid subscriber
+        // 1. Check if user is an active paid subscriber
         if ("PREMIUM".equalsIgnoreCase(student.getSubscriptionStatus())) {
-            // You could add subscription end date logic here if you want
-            // e.g., if (student.getSubscriptionEndsAt().isAfter(LocalDate.now()))
-            return true;
+            if (student.getSubscriptionEndsAt() == null || !student.getSubscriptionEndsAt().isBefore(java.time.LocalDate.now())) {
+                return true;
+            }
         }
 
         // 2. User is on a "FREE" plan, check their usage
