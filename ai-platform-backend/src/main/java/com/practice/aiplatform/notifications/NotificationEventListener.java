@@ -13,7 +13,7 @@ public class NotificationEventListener {
 
     private final NotificationService notificationService;
 
-    @KafkaListener(topics = "notification.events", groupId = "practiceflow-notification-group")
+    @KafkaListener(topics = "${kafka.topic.notification}", groupId = "${kafka.group.notification}")
     public void consumeNotificationEvent(NotificationEvent event) {
         log.info("🎧 Received Kafka Notification Event: Generating '{}' alert for student ID {}", event.getType(),
                 event.getStudentId());

@@ -1,12 +1,22 @@
 package com.practice.aiplatform.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
 public class KafkaTopicConfig {
+
+    @Value("${kafka.topic.gamification}")
+    private String gamificationTopicName;
+
+    @Value("${kafka.topic.notification}")
+    private String notificationTopicName;
+
+    @Value("${kafka.topic.recoveryplan}")
+    private String recoveryPlanTopicName;
 
     // Set replicas: 1 for StreamBase / single-broker environments, 3 if using multi-broker HA
     private static final short REPLICAS = System.getenv("SPRING_KAFKA_REPLICAS") != null
@@ -15,7 +25,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic gamificationTopic() {
-        return TopicBuilder.name("gamification.events")
+        return TopicBuilder.name(gamificationTopicName)
                 .partitions(1)
                 .replicas(REPLICAS)
                 .build();
@@ -23,7 +33,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic notificationTopic() {
-        return TopicBuilder.name("notification.events")
+        return TopicBuilder.name(notificationTopicName)
                 .partitions(1)
                 .replicas(REPLICAS)
                 .build();
@@ -31,7 +41,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic recoveryPlanTopic() {
-        return TopicBuilder.name("recoveryplan.events")
+        return TopicBuilder.name(recoveryPlanTopicName)
                 .partitions(1)
                 .replicas(REPLICAS)
                 .build();

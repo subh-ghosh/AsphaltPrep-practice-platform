@@ -13,7 +13,7 @@ public class RecoveryPlanEventListener {
 
     private final StudyPlanService studyPlanService;
 
-    @KafkaListener(topics = "recoveryplan.events", groupId = "practiceflow-studyplan-group", concurrency = "1")
+    @KafkaListener(topics = "${kafka.topic.recoveryplan}", groupId = "${kafka.group.recoveryplan}", concurrency = "1")
     public void consumeRecoveryPlanEvent(RecoveryPlanEvent event) {
         log.info("🎧 Received Kafka Event: Starting heavy background plan generations for {} (Plan ID: {})",
                 event.getUserEmail(), event.getPlanId() != null ? event.getPlanId() : "NEW");

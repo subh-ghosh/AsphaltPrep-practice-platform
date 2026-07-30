@@ -22,7 +22,7 @@ public class GamificationEventListener {
      * this method automatically wakes up, pulls the message, and processes XP in
      * the background!
      */
-    @KafkaListener(topics = "gamification.events", groupId = "practiceflow-gamification-group")
+    @KafkaListener(topics = "${kafka.topic.gamification}", groupId = "${kafka.group.gamification}")
     public void consumePracticeCompletedEvent(PracticeCompletedEvent event) {
         log.info("🎧 Received Kafka Event: User {} finished a quiz for {} points!", event.getUserEmail(),
                 event.getScoreEarned());

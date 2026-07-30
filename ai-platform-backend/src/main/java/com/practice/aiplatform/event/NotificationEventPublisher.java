@@ -2,6 +2,7 @@ package com.practice.aiplatform.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +13,11 @@ public class NotificationEventPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    private static final String TOPIC_NAME = "notification.events";
+    @Value("${kafka.topic.notification}")
+    private String topicName;
 
     public void publishNotificationEvent(NotificationEvent event) {
         log.info("📢 Broadcasting Notification Event to Kafka for student ID: {}", event.getStudentId());
-        kafkaTemplate.send(TOPIC_NAME, String.valueOf(event.getStudentId()), event);
+        kafkaTemplate.send(topicName, String.valueOf(event.getStudentId()), event);
     }
 }

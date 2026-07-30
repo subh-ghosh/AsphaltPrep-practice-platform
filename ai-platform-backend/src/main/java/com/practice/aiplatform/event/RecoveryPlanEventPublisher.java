@@ -2,6 +2,7 @@ package com.practice.aiplatform.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +13,12 @@ public class RecoveryPlanEventPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    private static final String TOPIC_NAME = "recoveryplan.events";
+    @Value("${kafka.topic.recoveryplan}")
+    private String topicName;
 
     public void publishRecoveryPlanEvent(RecoveryPlanEvent event) {
         log.info("📢 Broadcasting Recovery Plan Event to Kafka (Plan ID: {}) for user: {}",
                 event.getPlanId() != null ? event.getPlanId() : "NEW", event.getUserEmail());
-        kafkaTemplate.send(TOPIC_NAME, event.getUserEmail(), event);
+        kafkaTemplate.send(topicName, event.getUserEmail(), event);
     }
 }
