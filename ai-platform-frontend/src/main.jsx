@@ -9,11 +9,8 @@ import { MaterialTailwindControllerProvider } from "@/context";
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext.jsx";
 import { ThemeProvider as AppThemeProvider } from "@/context/ThemeContext.jsx";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { PaywallProvider } from "@/context/PaywallContext.jsx";
 import axios from "axios";
-
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 // FIXED SECURITY INTERCEPTOR
 axios.interceptors.request.use(
@@ -42,21 +39,19 @@ axios.interceptors.request.use(
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <GoogleOAuthProvider clientId={googleClientId || ""}>
-        <ThemeProvider>
-          <MaterialTailwindControllerProvider>
-            <AppThemeProvider>
-              <AuthProvider>
-                <NotificationProvider>
-                  <PaywallProvider>
-                    <App />
-                  </PaywallProvider>
-                </NotificationProvider>
-              </AuthProvider>
-            </AppThemeProvider>
-          </MaterialTailwindControllerProvider>
-        </ThemeProvider>
-      </GoogleOAuthProvider>
+      <ThemeProvider>
+        <MaterialTailwindControllerProvider>
+          <AppThemeProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <PaywallProvider>
+                  <App />
+                </PaywallProvider>
+              </NotificationProvider>
+            </AuthProvider>
+          </AppThemeProvider>
+        </MaterialTailwindControllerProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
