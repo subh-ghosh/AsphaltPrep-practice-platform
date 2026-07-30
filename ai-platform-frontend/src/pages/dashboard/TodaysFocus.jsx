@@ -61,9 +61,10 @@ const TodaysFocus = ({ user }) => {
         );
     }
 
-    const { planTitle, currentDay, totalDays, progress, todayItems, nextPractice } = context;
-    const completedToday = todayItems.filter(i => i.isCompleted).length;
-    const totalToday = todayItems.length;
+    const { planTitle, currentDay, totalDays, progress, todayItems = [], nextPractice } = context;
+    const safeTodayItems = Array.isArray(todayItems) ? todayItems : [];
+    const completedToday = safeTodayItems.filter(i => i && i.isCompleted).length;
+    const totalToday = safeTodayItems.length;
     const isDayComplete = totalToday > 0 && completedToday === totalToday;
 
     return (
@@ -119,7 +120,7 @@ const TodaysFocus = ({ user }) => {
                     </div>
 
                     <div className="space-y-3">
-                        {todayItems.map((item) => (
+                        {safeTodayItems.map((item) => (
                             <div
                                 key={item.itemId}
                                 className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${item.isCompleted
