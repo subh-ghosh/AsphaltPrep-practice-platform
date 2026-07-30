@@ -23,6 +23,7 @@ import {
     TrashIcon,
     ArrowUpTrayIcon,
 } from '@heroicons/react/24/solid';
+import toast from 'react-hot-toast';
 import { useTheme } from "@/context/ThemeContext.jsx";
 import RecommendationCard from "@/components/RecommendationCard";
 
@@ -91,9 +92,10 @@ const StudyPlanBuilderPage = () => {
         try {
             await api.delete(`/study-plans/${planId}`);
             setHistory(history.filter(p => p.id !== planId));
+            toast.success("Study plan deleted successfully");
         } catch (err) {
             console.error("Failed to delete study plan:", err);
-            alert("Failed to delete study plan. Please try again.");
+            toast.error("Failed to delete study plan. Please try again.");
         }
     };
 

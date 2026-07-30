@@ -21,6 +21,7 @@ import {
     BookOpenIcon,
     AcademicCapIcon
 } from '@heroicons/react/24/solid';
+import toast from 'react-hot-toast';
 
 const CourseGeneratorPage = () => {
     const [topic, setTopic] = useState('');
@@ -62,9 +63,7 @@ const CourseGeneratorPage = () => {
             // Refresh list after generation
             fetchCourses();
             setTopic('');
-            alert("Course Generated Successfully!");
-            // Optional: Navigate to the new course if needed, or just stay to see it in list
-            // navigate(`/dashboard/course/${response.data.id}`); 
+            toast.success("Course Generated Successfully!");
         } catch (err) {
             setError(err.response?.data?.error || "Failed to generate course. Please try again.");
         } finally {
@@ -79,9 +78,10 @@ const CourseGeneratorPage = () => {
         try {
             await api.delete(`/courses/${courseId}`);
             setCourses(courses.filter(c => c.id !== courseId));
+            toast.success("Course deleted successfully");
         } catch (err) {
             console.error("Failed to delete course:", err);
-            alert("Failed to delete course. Please try again.");
+            toast.error("Failed to delete course. Please try again.");
         }
     };
 

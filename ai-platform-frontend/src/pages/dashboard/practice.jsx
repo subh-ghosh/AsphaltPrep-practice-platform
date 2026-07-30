@@ -739,9 +739,11 @@ export function Practice() {
 
                 {/* Feedback Area */}
                 {(feedback || isPolling) && (
-                  <Card className={`border shadow-sm animate-slide-up bg-white dark:bg-gray-900 ${feedback?.evaluationStatus === 'CORRECT' ? 'border-green-200' :
-                    feedback?.evaluationStatus === 'CLOSE' ? 'border-orange-200' : 'border-red-200'
-                    }`}>
+                  <Card className={`border shadow-sm animate-slide-up bg-white dark:bg-gray-900 ${
+                    feedback?.evaluationStatus === 'CORRECT' ? 'border-green-200 dark:border-green-900/50' :
+                    feedback?.evaluationStatus === 'CLOSE' ? 'border-orange-200 dark:border-orange-900/50' :
+                    feedback?.evaluationStatus === 'REVEALED' ? 'border-blue-200 dark:border-blue-900/50' : 'border-red-200 dark:border-red-900/50'
+                  }`}>
                     <CardBody className="p-6">
                       {isPolling ? (
                         <div className="flex flex-col items-center justify-center py-8">
