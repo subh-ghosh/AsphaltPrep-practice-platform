@@ -72,32 +72,20 @@ public class AiController {
                         .orElse(null);
             }
 
-            boolean answeredPrevious = request.previousStatus() != null
-                    && ANSWERED_STATUSES.contains(request.previousStatus().trim().toUpperCase());
-            String questionText;
+            List<String> recentQuestionTexts = questionRepository
+                    .findTop12ByStudent_IdAndTopicIgnoreCaseOrderByGeneratedAtDesc(student.getId(), request.topic())
+                    .stream()
+                    .map(Question::getQuestionText)
+                    .toList();
 
-            if (!answeredPrevious) {
-                // If the previous question is still unanswered, return the cached one for this context.
-                questionText = aiService.generateQuestionFromCache(
-                        request.subject(),
-                        request.difficulty(),
-                        request.topic());
-            } else {
-                List<String> recentQuestionTexts = questionRepository
-                        .findTop12ByStudent_IdAndTopicIgnoreCaseOrderByGeneratedAtDesc(student.getId(), request.topic())
-                        .stream()
-                        .map(Question::getQuestionText)
-                        .toList();
-
-                // After an answer is submitted, force a fresh question and refresh cache.
-                questionText = aiService.generateFreshQuestionAndRefreshCache(
-                        request.subject(),
-                        request.difficulty(),
-                        request.topic(),
-                        previousQuestionText,
-                        request.previousStatus(),
-                        recentQuestionTexts);
-            }
+            // Always force a fresh question while excluding recent questions to prevent repetition
+            String questionText = aiService.generateFreshQuestionAndRefreshCache(
+                    request.subject(),
+                    request.difficulty(),
+                    request.topic(),
+                    previousQuestionText,
+                    request.previousStatus(),
+                    recentQuestionTexts);
 
             Question question = new Question();
             question.setStudent(student);

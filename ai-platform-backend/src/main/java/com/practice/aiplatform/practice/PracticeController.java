@@ -174,11 +174,12 @@ public class PracticeController {
     public PracticeHistoryDto getHistoryCached(String email) {
         Student student = studentRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
-        List<Answer> answers = answerRepository.findAllByStudentOrderBySubmittedAtDesc(student, PageRequest.of(0, 50));
+        List<Answer> answers = answerRepository.findAllWithQuestionByStudentIdOrderBySubmittedAtDesc(student.getId(), PageRequest.of(0, 50));
 
         List<PracticeHistoryDto.QuestionAnswerDto> historyList = new ArrayList<>();
         for (Answer answer : answers) {
             Question question = answer.getQuestion();
+            if (question == null) continue;
 
             PracticeHistoryDto.QuestionAnswerDto item = new PracticeHistoryDto.QuestionAnswerDto(
                     question.getId(),
