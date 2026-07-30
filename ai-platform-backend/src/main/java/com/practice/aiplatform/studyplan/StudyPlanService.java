@@ -1144,6 +1144,23 @@ public class StudyPlanService {
                 nextPractice);
     }
 
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "UserStudyPlansCache", key = "#userEmail"),
+            @CacheEvict(value = "UserStudyPlanSummariesCache", key = "#userEmail"),
+            @CacheEvict(value = "UserStudyPlanStatsCache", key = "#userEmail"),
+            @CacheEvict(value = "UserActiveContextCache", key = "#userEmail"),
+            @CacheEvict(value = "UserSuggestedPracticeCache", key = "#userEmail"),
+            @CacheEvict(value = "UserRecommendationsCache", key = "#userEmail"),
+            @CacheEvict(value = "UserStatisticsRecommendationsCache", key = "#userEmail"),
+            @CacheEvict(value = "StudyPlanByIdCache", key = "#userEmail + '-' + #id")
+    })
+    public void deleteStudyPlan(Long id, String userEmail) {
+        StudyPlan plan = getOwnedStudyPlanWithItems(id, userEmail);
+        evictOwnedQuizQuestionCaches(userEmail, plan);
+        studyPlanRepository.delete(plan);
+    }
+
     private StudyPlan getOwnedStudyPlan(Long planId, String userEmail) {
         StudyPlan plan = studyPlanRepository.findById(planId)
                 .orElseThrow(() -> new RuntimeException("Study plan not found"));
