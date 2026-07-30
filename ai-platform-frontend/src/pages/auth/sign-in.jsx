@@ -42,7 +42,17 @@ export function SignIn() {
       loginWithGitHub(code).then((result) => {
         setGithubSubmitting(false);
         if (result.success) {
-          navigate(from, { replace: true });
+          if (result.status === "NEEDS_REGISTRATION") {
+            navigate("/auth/sign-up", {
+              replace: true,
+              state: {
+                githubData: result.registrationData,
+                message: result.message || "Please complete registration by setting a password."
+              }
+            });
+          } else {
+            navigate(from, { replace: true });
+          }
         } else {
           setError(result.message || "GitHub authentication failed.");
         }

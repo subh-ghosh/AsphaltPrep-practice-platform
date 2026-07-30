@@ -290,8 +290,8 @@ public class StudentAuthController {
             response.put("student", dto);
 
             return ResponseEntity.ok(response);
-
         } catch (Exception e) {
+            log.error("Google Auth failed: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Google Auth Failed");
         }
     }
@@ -317,32 +317,35 @@ public class StudentAuthController {
                 if (student.getGithubUrl() == null || student.getGithubUrl().isBlank()) {
                     student.setGithubUrl(ghUser.htmlUrl());
                 }
-            } else {
-                student = new Student();
-                student.setEmail(email);
 
+                if (hasNoPassword(student)) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("status", "NEEDS_REGISTRATION");
+                    response.put("registrationData", Map.of(
+                            "email", student.getEmail(),
+                            "firstName", student.getFirstName(),
+                            "lastName", student.getLastName(),
+                            "avatarUrl", ghUser.avatarUrl() != null ? ghUser.avatarUrl() : "",
+                            "githubUrl", ghUser.htmlUrl() != null ? ghUser.htmlUrl() : ""));
+                    response.put("message", "Please complete registration by setting a password.");
+                    return ResponseEntity.ok(response);
+                }
+            } else {
                 String name = ghUser.name() != null && !ghUser.name().isBlank() ? ghUser.name() : ghUser.login();
                 String[] nameParts = name.trim().split("\\s+", 2);
-                student.setFirstName(nameParts[0]);
-                student.setLastName(nameParts.length > 1 ? nameParts[1] : "");
-                student.setAvatarUrl(ghUser.avatarUrl());
-                student.setGithubUrl(ghUser.htmlUrl());
-                student.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
-                student.setSubscriptionStatus("FREE");
-                student.setFreeActionsUsed(0);
-                student.setTotalXp(0);
-                student.setStreakDays(1);
-                studentRepository.save(student);
+                String firstName = nameParts[0];
+                String lastName = nameParts.length > 1 ? nameParts[1] : "";
 
-                try {
-                    notificationEventPublisher.publishNotificationEvent(
-                            NotificationEvent.builder()
-                                    .studentId(student.getId())
-                                    .type("REGISTER")
-                                    .message("Welcome! Your account has been created via GitHub.")
-                                    .build());
-                } catch (Exception ignored) {
-                }
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", "NEEDS_REGISTRATION");
+                response.put("registrationData", Map.of(
+                        "email", email,
+                        "firstName", firstName,
+                        "lastName", lastName,
+                        "avatarUrl", ghUser.avatarUrl() != null ? ghUser.avatarUrl() : "",
+                        "githubUrl", ghUser.htmlUrl() != null ? ghUser.htmlUrl() : ""));
+                response.put("message", "Please complete registration by setting a password.");
+                return ResponseEntity.ok(response);
             }
 
             updateStreak(student);

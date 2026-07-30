@@ -90,6 +90,15 @@ export function AuthProvider({ children }) {
     try {
       const response = await axios.post(`${API_URL}/oauth/github`, { code });
 
+      if (response.data.status === "NEEDS_REGISTRATION") {
+        return {
+          success: true,
+          status: "NEEDS_REGISTRATION",
+          registrationData: response.data.registrationData,
+          message: response.data.message
+        };
+      }
+
       if (response.data.status === "LOGIN_SUCCESS") {
         localStorage.setItem("token", response.data.token);
 
