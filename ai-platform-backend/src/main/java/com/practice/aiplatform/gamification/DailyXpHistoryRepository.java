@@ -11,6 +11,10 @@ import java.util.Optional;
 public interface DailyXpHistoryRepository extends JpaRepository<DailyXpHistory, Long> {
     Optional<DailyXpHistory> findByStudentIdAndDate(Long studentId, LocalDate date);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE DailyXpHistory d SET d.xpEarned = d.xpEarned + :amount WHERE d.student.id = :studentId AND d.date = :date")
+    int incrementXp(@org.springframework.data.repository.query.Param("studentId") Long studentId, @org.springframework.data.repository.query.Param("date") LocalDate date, @org.springframework.data.repository.query.Param("amount") int amount);
+
     List<DailyXpHistory> findByStudentIdAndDateBetweenOrderByDateAsc(Long studentId, LocalDate startDate,
             LocalDate endDate);
 

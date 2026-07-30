@@ -43,9 +43,15 @@ public class StudentAccountService {
         questionRepository.deleteByStudentId(studentId);
         userBadgeRepository.deleteByStudentId(studentId);
 
-        courseRepository.deleteByStudentId(studentId);
+        var courses = courseRepository.findByStudentId(studentId);
+        if (!courses.isEmpty()) {
+            courseRepository.deleteAll(courses);
+        }
 
-        studyPlanRepository.deleteByStudentId(studentId);
+        var plans = studyPlanRepository.findByStudentIdOrderByCreatedAtDesc(studentId, org.springframework.data.domain.Pageable.unpaged());
+        if (!plans.isEmpty()) {
+            studyPlanRepository.deleteAll(plans);
+        }
 
         studentRepository.delete(student);
     }

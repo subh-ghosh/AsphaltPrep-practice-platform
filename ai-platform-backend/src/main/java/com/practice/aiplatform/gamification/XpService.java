@@ -38,13 +38,16 @@ public class XpService {
         student.setTotalXp(student.getTotalXp() + amount);
         studentRepository.save(student);
 
-        // 2. Update Daily XP History
+        // 2. Update Daily XP History (Thread-safe atomic increment with fallback)
         LocalDate today = LocalDate.now();
-        DailyXpHistory history = dailyXpHistoryRepository.findByStudentIdAndDate(student.getId(), today)
-                .orElse(new DailyXpHistory(student, today, 0));
-
-        history.setXpEarned(history.getXpEarned() + amount);
-        dailyXpHistoryRepository.save(history);
+        int updated = dailyXpHistoryRepository.incrementXp(student.getId(), today, amount);
+        if (updated == 0) {
+            try {
+                dailyXpHistoryRepository.save(new DailyXpHistory(student, today, amount));
+            } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+                dailyXpHistoryRepository.incrementXp(student.getId(), today, amount);
+            }
+        }
     }
 
     @Cacheable(value = "UserXpHistoryCache", key = "#studentId", sync = true)
