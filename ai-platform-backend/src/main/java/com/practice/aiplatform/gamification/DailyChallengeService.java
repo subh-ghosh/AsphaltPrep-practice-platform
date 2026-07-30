@@ -128,9 +128,13 @@ public class DailyChallengeService {
     }
 
     @Transactional
-    public void claimReward(Long challengeId) {
+    public void claimReward(Long challengeId, Long studentId) {
         DailyChallenge challenge = dailyChallengeRepository.findById(challengeId)
                 .orElseThrow(() -> new RuntimeException("Challenge not found"));
+
+        if (!challenge.getStudent().getId().equals(studentId)) {
+            throw new RuntimeException("Unauthorized: This challenge belongs to another student");
+        }
 
         if (challenge.isClaimed()) {
             throw new RuntimeException("Reward already claimed");

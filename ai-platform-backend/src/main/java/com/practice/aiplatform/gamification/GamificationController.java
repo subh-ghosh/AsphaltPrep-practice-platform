@@ -97,9 +97,10 @@ public class GamificationController {
         }
 
         @PostMapping("/daily-challenges/{id}/claim")
-        public ResponseEntity<String> claimChallengeReward(@PathVariable Long id) {
+        public ResponseEntity<String> claimChallengeReward(@PathVariable Long id, Principal principal) {
                 try {
-                        dailyChallengeService.claimReward(id);
+                        Long studentId = currentUserResolver.getRequiredUserId(principal);
+                        dailyChallengeService.claimReward(id, studentId);
                         return ResponseEntity.ok("Reward claimed");
                 } catch (RuntimeException e) {
                         return ResponseEntity.badRequest().body(e.getMessage());
