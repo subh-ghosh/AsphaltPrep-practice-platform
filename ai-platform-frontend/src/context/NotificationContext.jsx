@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import { API_BASE_URL } from "@/config";
+import api from "@/api";
 import { useAuth } from "./AuthContext";
 
 const NotificationContext = createContext();
@@ -8,10 +7,6 @@ const NotificationContext = createContext();
 export function useNotifications() {
   return useContext(NotificationContext);
 }
-
-// Hardcode URL for safety
-// Use dynamic URL from config. Remove /api for notification endpoints as they append it themselves or expect the base
-const BASE_URL = API_BASE_URL.replace(/\/api$/, "");
 
 export function NotificationProvider({ children }) {
   const { user } = useAuth();
@@ -21,7 +16,6 @@ export function NotificationProvider({ children }) {
   const [error, setError] = useState(null);
 
   // 1. Fetch Notifications (Single Source of Truth)
-  // We fetch ALL notifications so the "History" tab works without extra calls
   const fetchNotifications = useCallback(async (isSilent = false) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -29,15 +23,12 @@ export function NotificationProvider({ children }) {
     if (!isSilent) setLoading(true);
 
     try {
-      const config = { headers: { "Authorization": `Bearer ${token}` } };
+      const res = await api.get("/notifications");
 
-      // CHANGED: Fetch ALL notifications, not just unread
-      const res = await axios.get(`${BASE_URL}/api/notifications`, config);
-
-      setNotifications(res.data);
+      setNotifications(res.data || []);
 
       // Calculate unread count locally
-      const unread = res.data.filter(n => !n.readFlag).length;
+      const unread = (res.data || []).filter(n => !n.readFlag).length;
       setUnreadCount(unread);
       setError(null);
     } catch (err) {
@@ -52,33 +43,26 @@ export function NotificationProvider({ children }) {
 
   // 2. Mark Read (Optimistic Update)
   const markRead = useCallback(async (id) => {
-    // INSTANTLY update UI state before server responds (No Lag)
     setNotifications(prev =>
       prev.map(n => n.id === id ? { ...n, readFlag: true } : n)
     );
     setUnreadCount(prev => Math.max(0, prev - 1));
 
     try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { "Authorization": `Bearer ${token}` } };
-      await axios.patch(`${BASE_URL}/api/notifications/${id}/read`, {}, config);
+      await api.patch(`/notifications/${id}/read`);
     } catch (err) {
       console.error("Context: Failed to mark read", err);
-      // If it fails, re-fetch to ensure sync
       fetchNotifications(true);
     }
   }, [fetchNotifications]);
 
   // 3. Mark ALL Read (Optimistic Update)
   const markAllAsRead = useCallback(async () => {
-    // Optimistic: Mark all as read locally immediately
     setNotifications(prev => prev.map(n => ({ ...n, readFlag: true })));
     setUnreadCount(0);
 
     try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { "Authorization": `Bearer ${token}` } };
-      await axios.patch(`${BASE_URL}/api/notifications/read-all`, {}, config);
+      await api.patch("/notifications/read-all");
     } catch (err) {
       console.error("Context: Failed to mark all read", err);
       fetchNotifications(true);
@@ -89,12 +73,12 @@ export function NotificationProvider({ children }) {
   useEffect(() => {
     if (user) {
       fetchNotifications();
-      // Poll every 2 minutes to reduce Redis requests
+      // Poll every 30 seconds for real-time notifications
       const interval = setInterval(() => {
         if (!document.hidden) {
           fetchNotifications(true);
         }
-      }, 120000);
+      }, 30000);
 
       const onVisibility = () => {
         if (!document.hidden) {
