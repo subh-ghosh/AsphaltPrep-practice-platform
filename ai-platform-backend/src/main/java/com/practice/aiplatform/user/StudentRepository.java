@@ -17,4 +17,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     // Leaderboard query
     List<Student> findTop10ByOrderByTotalXpDesc();
+
+    @Query("SELECT COUNT(s) + 1 FROM Student s WHERE s.totalXp > (SELECT COALESCE(s2.totalXp, 0) FROM Student s2 WHERE s2.id = :studentId)")
+    long calculateRankByStudentId(@Param("studentId") Long studentId);
 }

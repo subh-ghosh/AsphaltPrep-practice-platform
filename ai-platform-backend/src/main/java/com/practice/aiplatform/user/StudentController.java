@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 record ProfileUpdateRequest(
         String firstName,
@@ -186,6 +188,27 @@ public class StudentController {
     @GetMapping("/leaderboard")
     public ResponseEntity<List<StudentResponseDTO>> getLeaderboard() {
         return ResponseEntity.ok(self.getLeaderboardCached());
+    }
+
+    @GetMapping("/me/rank")
+    public ResponseEntity<?> getMyRank(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        Student student = studentRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        long rank = studentRepository.calculateRankByStudentId(student.getId());
+        long totalStudents = studentRepository.count();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("rank", rank);
+        result.put("totalStudents", totalStudents);
+        result.put("totalXp", student.getTotalXp());
+        result.put("streakDays", student.getStreakDays());
+
+        return ResponseEntity.ok(result);
     }
 
     @Cacheable(value = "LeaderboardCache", key = "'top10'", sync = true)
