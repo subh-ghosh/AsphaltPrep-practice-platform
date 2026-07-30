@@ -72,7 +72,7 @@ export function SignIn() {
 
   const handleGitHubAuth = () => {
     setGithubSubmitting(true);
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID || "Ov23liEqM2skxeRezJep";
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
     const redirectUri = window.location.origin + window.location.pathname;
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=user:email&redirect_uri=${encodeURIComponent(redirectUri)}`;
   };
