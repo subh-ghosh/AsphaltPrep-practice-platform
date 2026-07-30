@@ -508,63 +508,13 @@ const ResourceParallax = () => {
   );
 };
 
-// --- 5. MODULAR STUDY JOURNEY (Sticky Progress Flow) ---
+// --- 5. MODULAR STUDY JOURNEY ---
 const ModularStudyJourney = () => {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
-  const progressLineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-
-  // Transform colors based on progress
-  const step1Color = useTransform(scrollYProgress, [0, 0.25, 0.35], ["#3b82f6", "#3b82f6", "#1e293b"]);
-  const step2Color = useTransform(scrollYProgress, [0.35, 0.45, 0.75, 0.85], ["#1e293b", "#a855f7", "#a855f7", "#1e293b"]);
-  const step3Color = useTransform(scrollYProgress, [0.85, 0.95, 1], ["#1e293b", "#22c55e", "#22c55e"]);
-
-  const step1Glow = useTransform(scrollYProgress, [0, 0.28, 0.38], ["0 0 20px rgba(59,130,246,0.5)", "0 0 20px rgba(59,130,246,0.5)", "0 0 0px transparent"]);
-  const step2Glow = useTransform(scrollYProgress, [0.28, 0.38, 0.62, 0.72], ["0 0 0px transparent", "0 0 20px rgba(168,85,247,0.5)", "0 0 20px rgba(168,85,247,0.5)", "0 0 0px transparent"]);
-  const step3Glow = useTransform(scrollYProgress, [0.62, 0.72, 1], ["0 0 0px transparent", "0 0 20px rgba(34,197,94,0.5)", "0 0 20px rgba(34,197,94,0.5)"]);
-  const railOpacity = useTransform(scrollYProgress, [0, 0.03, 0.97, 1], [0, 1, 1, 0]);
-
   return (
-    <section ref={containerRef} className="bg-[#050505] relative border-t border-white/5 overflow-x-hidden">
-
-      {/* Sticky Sidebar Progress */}
-      <motion.div
-        style={{ opacity: railOpacity }}
-        className="fixed left-8 md:left-20 top-24 h-[calc(100vh-6rem)] w-16 hidden lg:flex z-50 pointer-events-none"
-      >
-        <div className="h-full min-h-[420px] max-h-[680px] w-full flex flex-col items-center justify-between py-6 relative pointer-events-auto">
-            {/* Background Track */}
-            <div className="absolute inset-0 left-1/2 -translate-x-1/2 w-[2px] bg-white/10 rounded-full" />
-
-            {/* Progress Line */}
-            <motion.div
-              style={{ height: progressLineHeight }}
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] bg-gradient-to-b from-blue-500 via-purple-500 to-green-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]"
-            />
-
-            {/* Step Nodes */}
-            {[
-              { icon: CalendarDaysIcon, color: step1Color, glow: step1Glow },
-              { icon: VideoCameraIcon, color: step2Color, glow: step2Glow },
-              { icon: TrophyIcon, color: step3Color, glow: step3Glow }
-            ].map((step, i) => (
-              <motion.div
-                key={i}
-                style={{ color: step.color, boxShadow: step.glow, borderColor: step.color }}
-                className="relative z-10 w-11 h-11 rounded-full bg-[#050505] border-2 flex items-center justify-center transition-all duration-300"
-              >
-                <step.icon className="w-5 h-5" />
-              </motion.div>
-            ))}
-        </div>
-      </motion.div>
+    <section className="bg-[#050505] relative border-t border-white/5 overflow-x-hidden">
 
       {/* STEP 1: PLAN (Blue Theme) */}
-      <div className="py-20 md:py-48 px-4 lg:pl-64 relative border-t border-white/5">
+      <div className="py-20 md:py-48 px-4 md:px-8 relative border-t border-white/5">
         <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center relative z-10">
           <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }} viewport={{ once: true }}>
@@ -594,7 +544,7 @@ const ModularStudyJourney = () => {
       </div>
 
       {/* STEP 2: ABSORB (Purple Theme) - Layout Flipped */}
-      <div className="py-20 md:py-48 px-4 lg:pl-64 relative border-t border-white/5">
+      <div className="py-20 md:py-48 px-4 md:px-8 relative border-t border-white/5">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center relative z-10">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }} viewport={{ once: true }} className="relative order-2 md:order-1">
@@ -627,7 +577,7 @@ const ModularStudyJourney = () => {
       </div>
 
       {/* STEP 3: RETAIN (Green Theme) */}
-      <div className="py-20 md:py-48 px-4 lg:pl-64 relative border-t border-white/5">
+      <div className="py-20 md:py-48 px-4 md:px-8 relative border-t border-white/5">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-green-600/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center relative z-10">
           <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }} viewport={{ once: true }}>
