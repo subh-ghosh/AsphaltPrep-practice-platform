@@ -149,7 +149,6 @@ export function AuthProvider({ children }) {
     user,
     loading,
     login,
-    loginWithGoogle,
     loginWithGitHub,
     logout,
     updateUser, // 👈 Exported for Profile page

@@ -167,7 +167,7 @@ export function SignIn() {
                   type="submit"
                   className="bg-white text-black hover:scale-[1.02] shadow-none hover:shadow-lg transition-all w-full rounded-full"
                   fullWidth
-                  disabled={submitting || googleSubmitting}
+                  disabled={submitting || githubSubmitting}
                 >
                   {submitting ? "Signing in..." : "Sign In"}
                 </Button>
