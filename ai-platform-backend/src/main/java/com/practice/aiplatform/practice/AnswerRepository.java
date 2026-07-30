@@ -42,4 +42,8 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
 
         long deleteByStudentId(Long studentId);
 
+        @org.springframework.data.jpa.repository.Modifying
+        @Query("DELETE FROM Answer a WHERE a.question.id IN (SELECT q.id FROM Question q WHERE q.student.id = :studentId)")
+        void deleteByQuestionStudentId(@Param("studentId") Long studentId);
+
 }
