@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
@@ -34,12 +35,28 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOriginPatterns(List.of("*"));
+                    config.setAllowedOriginPatterns(List.of(
+                            "https://asphaltprep.subartaghosh.co.in",
+                            "https://*.subartaghosh.co.in",
+                            "https://*.ai-practice-platform.pages.dev",
+                            "http://localhost:*",
+                            "http://127.0.0.1:*"
+                    ));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
+                    config.setExposedHeaders(List.of("Authorization", "X-Total-Count"));
                     config.setAllowCredentials(true);
                     return config;
                 }))
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny())
+                        .contentTypeOptions(contentType -> {})
+                        .xssProtection(xss -> xss.headerValue(org.springframework.security.web.header.writers.XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000))
+                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                )
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
@@ -63,7 +80,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments/**").authenticated()
                         .requestMatchers("/api/courses/**").authenticated()
                         .requestMatchers("/api/study-plans/**").authenticated()
-                        .requestMatchers("/api/students/profile", "/api/students/password", "/api/students/account")
+                        .requestMatchers("/api/students/profile", "/api/students/password", "/api/students/account", "/api/students/me/rank")
                         .authenticated()
                         .anyRequest().authenticated()
                 )

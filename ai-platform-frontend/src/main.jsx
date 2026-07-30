@@ -10,12 +10,12 @@ import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext.jsx";
 import { ThemeProvider as AppThemeProvider } from "@/context/ThemeContext.jsx";
 import { PaywallProvider } from "@/context/PaywallContext.jsx";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import axios from "axios";
 
 // FIXED SECURITY INTERCEPTOR
 axios.interceptors.request.use(
   (config) => {
-    // DO NOT attach token to auth endpoints
     if (
       config.url?.includes("/login") ||
       config.url?.includes("/register") ||
@@ -38,20 +38,22 @@ axios.interceptors.request.use(
 // APP RENDER
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <MaterialTailwindControllerProvider>
-          <AppThemeProvider>
-            <AuthProvider>
-              <NotificationProvider>
-                <PaywallProvider>
-                  <App />
-                </PaywallProvider>
-              </NotificationProvider>
-            </AuthProvider>
-          </AppThemeProvider>
-        </MaterialTailwindControllerProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ThemeProvider>
+          <MaterialTailwindControllerProvider>
+            <AppThemeProvider>
+              <AuthProvider>
+                <NotificationProvider>
+                  <PaywallProvider>
+                    <App />
+                  </PaywallProvider>
+                </NotificationProvider>
+              </AuthProvider>
+            </AppThemeProvider>
+          </MaterialTailwindControllerProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );
