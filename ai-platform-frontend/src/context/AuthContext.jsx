@@ -85,10 +85,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 3. Google Login Function
-  const loginWithGoogle = async (idToken) => {
+  // 3. GitHub Login Function
+  const loginWithGitHub = async (code) => {
     try {
-      const response = await axios.post(`${API_URL}/oauth/google`, { token: idToken });
+      const response = await axios.post(`${API_URL}/oauth/github`, { code });
 
       if (response.data.status === "LOGIN_SUCCESS") {
         localStorage.setItem("token", response.data.token);
@@ -100,28 +100,11 @@ export function AuthProvider({ children }) {
         return { success: true, status: "LOGIN_SUCCESS" };
       }
 
-      if (response.data.status === "NEEDS_REGISTRATION") {
-        try {
-          sessionStorage.setItem(
-            "pendingGoogleRegistration",
-            JSON.stringify(response.data.registrationData || {})
-          );
-        } catch (_) {
-          // no-op
-        }
-        return {
-          success: true,
-          status: "NEEDS_REGISTRATION",
-          registrationData: response.data.registrationData || {},
-          message: response.data.message
-        };
-      }
-
-      return { success: false, message: response.data?.message || "Google login failed" };
+      return { success: false, message: response.data?.message || "GitHub authentication failed" };
 
     } catch (error) {
-      console.error("Google Auth Error:", error);
-      return { success: false, message: error.response?.data?.message || "Google login failed" };
+      console.error("GitHub Auth Error:", error);
+      return { success: false, message: error.response?.data?.message || "GitHub authentication failed" };
     }
   };
 
@@ -167,6 +150,7 @@ export function AuthProvider({ children }) {
     loading,
     login,
     loginWithGoogle,
+    loginWithGitHub,
     logout,
     updateUser, // 👈 Exported for Profile page
     decrementFreeActions // 👈 Exported for Practice page

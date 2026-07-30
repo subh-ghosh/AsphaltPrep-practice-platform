@@ -31,6 +31,7 @@ public class StudentAuthController {
     private final JwtUtil jwtUtil;
     private final NotificationEventPublisher notificationEventPublisher;
     private final GoogleAuthService googleAuthService;
+    private final GitHubAuthService gitHubAuthService;
     private final RefreshTokenService refreshTokenService;
 
     public StudentAuthController(
@@ -39,12 +40,14 @@ public class StudentAuthController {
             JwtUtil jwtUtil,
             NotificationEventPublisher notificationEventPublisher,
             GoogleAuthService googleAuthService,
+            GitHubAuthService gitHubAuthService,
             RefreshTokenService refreshTokenService) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.notificationEventPublisher = notificationEventPublisher;
         this.googleAuthService = googleAuthService;
+        this.gitHubAuthService = gitHubAuthService;
         this.refreshTokenService = refreshTokenService;
     }
 
@@ -290,6 +293,90 @@ public class StudentAuthController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Google Auth Failed");
+        }
+    }
+
+    @PostMapping("/oauth/github")
+    public ResponseEntity<?> handleGitHubLogin(@RequestBody Map<String, String> request) {
+        try {
+            String code = request.get("code");
+            if (code == null || code.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "GitHub authorization code is required"));
+            }
+
+            GitHubAuthService.GitHubUser ghUser = gitHubAuthService.processGitHubCode(code);
+            String email = ghUser.email();
+            Optional<Student> existing = studentRepository.findByEmail(email);
+
+            Student student;
+            if (existing.isPresent()) {
+                student = existing.get();
+                if (student.getAvatarUrl() == null || student.getAvatarUrl().isBlank()) {
+                    student.setAvatarUrl(ghUser.avatarUrl());
+                }
+                if (student.getGithubUrl() == null || student.getGithubUrl().isBlank()) {
+                    student.setGithubUrl(ghUser.htmlUrl());
+                }
+            } else {
+                student = new Student();
+                student.setEmail(email);
+
+                String name = ghUser.name() != null && !ghUser.name().isBlank() ? ghUser.name() : ghUser.login();
+                String[] nameParts = name.trim().split("\\s+", 2);
+                student.setFirstName(nameParts[0]);
+                student.setLastName(nameParts.length > 1 ? nameParts[1] : "");
+                student.setAvatarUrl(ghUser.avatarUrl());
+                student.setGithubUrl(ghUser.htmlUrl());
+                student.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+                student.setSubscriptionStatus("FREE");
+                student.setFreeActionsUsed(0);
+                student.setTotalXp(0);
+                student.setStreakDays(1);
+                studentRepository.save(student);
+
+                try {
+                    notificationEventPublisher.publishNotificationEvent(
+                            NotificationEvent.builder()
+                                    .studentId(student.getId())
+                                    .type("REGISTER")
+                                    .message("Welcome! Your account has been created via GitHub.")
+                                    .build());
+                } catch (Exception ignored) {
+                }
+            }
+
+            updateStreak(student);
+            studentRepository.save(student);
+
+            String jwt = jwtUtil.generateToken(student);
+
+            refreshTokenService.deleteByUserId(student.getId());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(student.getId());
+
+            StudentDto dto = new StudentDto(
+                    student.getId(),
+                    student.getEmail(),
+                    student.getFirstName(),
+                    student.getLastName(),
+                    student.getGender(),
+                    jwt,
+                    student.getSubscriptionStatus(),
+                    student.getFreeActionsUsed(),
+                    student.getTotalXp(),
+                    student.getStreakDays(),
+                    refreshToken.getToken());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "LOGIN_SUCCESS");
+            response.put("token", jwt);
+            response.put("refreshToken", refreshToken.getToken());
+            response.put("student", dto);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("GitHub Auth failed: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "GitHub Authentication Failed: " + e.getMessage()));
         }
     }
 
