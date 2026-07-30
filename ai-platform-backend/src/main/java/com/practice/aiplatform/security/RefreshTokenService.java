@@ -30,9 +30,12 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
+    @Transactional
     public RefreshToken createRefreshToken(Long userId) {
         Student student = studentRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        refreshTokenRepository.deleteByStudent(student);
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setStudent(student);

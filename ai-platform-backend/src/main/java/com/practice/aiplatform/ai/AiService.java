@@ -308,11 +308,14 @@ public class AiService {
         }
 
         private String extractTextFromResponse(AiResponse response) {
-                try {
-                        return response.choices().get(0).message().content();
-                } catch (Exception e) {
-                        return "Error: Could not parse generated response.";
+                if (response == null || response.choices() == null || response.choices().isEmpty()) {
+                        throw new RuntimeException(PRACTICE_UNAVAILABLE_CODE + ": Empty response from generation service.");
                 }
+                String content = response.choices().get(0).message() != null ? response.choices().get(0).message().content() : null;
+                if (content == null || content.isBlank()) {
+                        throw new RuntimeException(PRACTICE_UNAVAILABLE_CODE + ": Generation service returned blank text.");
+                }
+                return content;
         }
 
         private String buildQuestionPrompt(
