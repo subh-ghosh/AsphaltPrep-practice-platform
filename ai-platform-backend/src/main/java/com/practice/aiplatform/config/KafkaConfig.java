@@ -42,6 +42,9 @@ public class KafkaConfig {
     @Value("${spring.kafka.properties.ssl.engine.factory.class:com.practice.aiplatform.config.InsecureSslEngineFactory}")
     private String sslEngineFactoryClass;
 
+    @Value("${spring.kafka.listener.auto-startup:true}")
+    private boolean autoStartup;
+
     private Map<String, Object> commonConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -71,6 +74,8 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.setAutoStartup(autoStartup);
+        factory.getContainerProperties().setAuthExceptionRetryInterval(java.time.Duration.ofSeconds(60));
         factory.setCommonErrorHandler(new DefaultErrorHandler((record, exception) -> {
             log.error("Kafka consumer error: {}", exception.getMessage());
         }, new FixedBackOff(10000L, FixedBackOff.UNLIMITED_ATTEMPTS)));
