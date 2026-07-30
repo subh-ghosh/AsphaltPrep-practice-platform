@@ -356,6 +356,16 @@ public class StudentAuthController {
             refreshTokenService.deleteByUserId(student.getId());
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(student.getId());
 
+            try {
+                notificationEventPublisher.publishNotificationEvent(
+                        NotificationEvent.builder()
+                                .studentId(student.getId())
+                                .type("LOGIN")
+                                .message("New login detected via GitHub.")
+                                .build());
+            } catch (Exception ignored) {
+            }
+
             StudentDto dto = new StudentDto(
                     student.getId(),
                     student.getEmail(),
